@@ -15,69 +15,70 @@
           <div class="users__block">
             <div class="users__block_title">
               <div class="users__block_img" id="loadPhoto">
-                <img class="users__block_image" src="" id="avatarImage">
-                <span class="no_photo">No photo</span>
+                <img class="users__block_image" src="img/noAvatar.jpg" id="avatarImage">
               </div>
-              <h3 class="users__block_name">Добро пожаловать!</h3>
+              <span class="users__block_name"></span>
             </div>
             <h4 class="users__block_members">Участники</h4>
-            <ul class="users__block_list" id="usersList">
-              <!-- <li>fdg</li>
-              <li>gfghfh</li> -->
-            </ul>
+            <ul class="users__block_list" id="usersList"></ul>
           </div>
         </div>
         <div class="message">
           <div class="message__container">
-            <ul class="message__list" id="messages"></ul>
+            <div class="message__list" id="messages"></div>
           </div>
-          <div class="message__form">
-            <input type="text" name="message" class="message__form_input" id="messageText" placeholder="Введите сообщение">
+          <form method="POST" action="/" class="message__form">
+            <input type="text" name="message" class="message__form_input" id="messageText" placeholder="Введите сообщение" required>
             <button class="message__form_btn button-o" id="sendBtn">Отправить</button>
-          </div>
+          </form>
         </div>
       </div>
     </div>
-    <!-- <div class="authorization__modal" id="authPopup">
-    <h3 class="authorization__modal_title">Авторизация</h3>
-    <div class="authorization__modal_block">
-          <input type="text" placeholder="Введите имя" class="authorization__modal_input" id="name">
-            <input type="text" placeholder="Введите ник" class="authorization__modal_input" id="nickname">
-            <button class="authorization__modal_btn button-o" id="authBtn">Войти</button>
-  </div>
-</div> -->
+    <form method="POST" action="#" class="authorization__modal" id="authPopup">
+      <h3 class="authorization__modal_title">Авторизация</h3>
+      <div class="authorization__modal_block">
+        <input type="text" placeholder="Введите имя" class="authorization__modal_input" id="name" required>
+        <input type="text" placeholder="Введите ник" class="authorization__modal_input" id="nickname" required>
+        <button class="authorization__modal_btn button-o" id="authBtn">Войти</button>
+      </div>
+    </form>
 
     <div class="fileload__modal" id="fileLoadPopup">
     <h4 class="fileload__modal_title">Загрузка фото</h4>
-    <div class="fileload__modal_block">
-      <div class="droparea">
-        <input type="file" name= "file" id="inputFile" accept="image/*" data-title="Перетащите сюда файл" class="fileload__modal_input">
-        <img src="" id="image" class="image_input">
-        <label for="inputFile" id='drop-area'></label>
+    <div id="drop-area">
+      <form class="my-form">
+        <p>Загрузите изображение с помощью диалога выбора файлов или перетащив нужное изображение в выделенную область</p>
+        <input type="file" id="fileElem" accept="image/*" onchange="handleFile(this.files[0])">
+        <label class="button" for="fileElem">Выбрать изображениe</label>
+      </form>
+      <div id="preview"></div>
+    </div>  
+    <div class="fileload__modal_buttons">
+          <button class="button-o" id="cancel">Отмена</button>
+          <button class="button-o" id="sendPhoto">Загрузить</button>
       </div>
-        <div class="fileload__modal_buttons">
-            <button class="button-o" id="cancel">Отмена</button>
-            <button class="button-o" id="sendPhoto">Загрузить</button>
-        </div>
-    </div>
 </div>
 
-<script src="js/script.js"></script>
 <script id="listOfUsers" type="text/x-handlebars-template">
-    {{#each this}}
-    <li>
-        <span>{{name}}</span>
-    </li>
-    {{/each}}
-</script>
-<script id="messageList" type="text/x-handlebars-template">
   {{#each this}}
-  <li>
-      <img id= "messagesPhoto" onchange= "sendImg()" src="" alt="" style="width:70px; height: 70px; border-radius: 70px; box-shadow: none">
-      <span>{{date}}</span>
-      <span>{{username}}</span>
-      <span>{{content}}</span>
-  </li>
+    <li>
+      <img src="{{#if image}}{{image}}{{else}}img/noAvatar.jpg{{/if}}" class="users__block_list-member-image">
+      <span>{{name}}</span>
+    </li>
   {{/each}}
+</script>
+
+<script id="messageList" type="text/x-handlebars-template">
+  <div>
+    <img id="messagesPhoto" src="{{#if image}}{{image}}{{else}}img/noAvatar.jpg{{/if}}" style="width:70px; height: 70px; border-radius: 70px; box-shadow: none;">
+  </div>
+  <div>
+    <span class="message__name">{{username}}</span>
+    <span class="message__date">{{date}}</span>
+    <p class="message__content">{{content}}</p>
+  </div>
+</script>
+
+<script src="js/script.js"></script>
   </body>
 </html>

@@ -1,3 +1,42 @@
+#drop-area {
+  border: 2px dashed #ccc;
+  border-radius: 20px;
+  font-family: sans-serif;
+  margin-top: 30px;
+  padding: 20px;
+}
+#drop-area.highlight {
+  border-color: #FFC107;
+}
+.my-form {
+  margin-bottom: 10px;
+}
+#preview {
+  margin-top: 10px;
+}
+#preview img {
+  width: 150px;
+  margin-bottom: 10px;
+  margin-right: 10px;
+  vertical-align: middle;
+}
+.button {
+  display: inline-block;
+  padding: 10px;
+  background: #ccc;
+  cursor: pointer;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+.button:hover {
+  background: #ddd;
+}
+#fileElem {
+  display: none;
+}
+
+/* ----------------------------------------------------- */
+
 body {
   margin: 0;
   padding: 0;
@@ -15,8 +54,9 @@ body {
 .users {
   margin: 0;
   height: 100vh;
-  padding: 1rem;
-  background-color: #ccc;
+  padding: 15px 15px 0 0;
+  width: 200px;
+  background-color: #2196F3;
   color: #fff;
 }
 .row {
@@ -24,7 +64,6 @@ body {
 }
 .users__block_title {
   display: flex;
-  justify-content: space-around;
   align-items: center;
 }
 
@@ -39,23 +78,12 @@ body {
   cursor: pointer;
 }
 
-.no_photo {
-  display: block;
-  font-size: 18px;
-  color: #2C2B2C;
-  text-align: center;
-  font-weight: 400;
-}
-
 .users__block_name {
-  min-width: 150px;
-  margin-left: 10px;
-  font-size: 16px;
-  font-weight: 700;
+  margin-left: 16px;
+  font-size: 24px;
 }
 
 .users__block_members {
-  display: none;
   margin-left: 15px;
   margin-top: 45px;
   font-size: 14px;
@@ -69,21 +97,43 @@ body {
 .button-o {
   margin: 5px;
   padding: 10px 15px;
-  background-color: #ccc;
   color: #fff;
   border: none;
   border-radius: 10px;
   outline: none;
   font-size: 13px;
   cursor: pointer;
+  background-color: #FFC107;
 }
 
 .button-o:hover {
-  background-color: #e76228;
+  background-color: #FFA000;
 }
 .message {
   height: 100vh;
 }
+
+.message__item {
+  display: flex;
+  align-items: flex-start;
+  margin: 10px 0;
+}
+
+.message__name {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.message__date {
+  font-size: 14px;
+  color: #616161;
+}
+
+.message__content {
+  font-size: 16px;
+  margin: 5px 0 0 0;
+}
+
 .message__form {
   position: fixed;
   bottom: 50px;
@@ -111,6 +161,8 @@ body {
 .message__form_btn {
   padding: 8px 20px;
   border-radius: 15px;
+  background-color: #FFC107;
+  color: #fff;
 }
 
 .authorization__modal {
@@ -119,7 +171,7 @@ body {
   left: 40%;
   width: 400px;
   padding: .5rem 0 1rem;
-  background-color: #F2F1F2;
+  background-color: #FFC107;
   border-radius: 10px;
 }
 
@@ -134,7 +186,7 @@ body {
 .authorization__modal_title {
   font-size: 20px;
   margin: 3px;
-  color: #6c6c6c;
+  color: #fff;
 }
 
 .authorization__modal_input {
@@ -155,6 +207,7 @@ body {
   margin-left: 300px;
   margin-top: 45px;
   padding: 5px 10px;
+  background-color: #FFC107;
 }
 
 .authorization__modal_input:focus {
@@ -175,72 +228,15 @@ body {
   left: 35%;
   padding: 10px;
   width: 500px;
-  height: 300px;
-  background-color: #F2F1F2;
-  border-radius: 10px;\
-  transition:display, 0.5s, ease-in;
-}
-
-.fileload__modal_block {
-  margin: 0 auto;
-  margin-top: 10px;
-  margin-bottom: 20px;
-  padding-top: 20px;
-  width: 98%;
-  height: 85%;
-  background-color: #fff;
+  background-color: #2196F3;
   border-radius: 10px;
+  transition: display, 0.5s, ease-in;
 }
 
 .fileload__modal_title {
   font-size: 20px;
   margin: 0;
-  color: #6c6c6c;
-}
-
-.droparea {
-  display: block;
-  position: relative;
-  margin: 0 auto;
-  width: 150px;
-  height: 150px;
-  line-height: 150px;
-  text-align: center;
-  cursor: pointer;
-  font-size: 10px;
-  border: 3px dotted #a2a2a2;
-  border-radius: 10px;
-  color: #909090;
-}
-
-.fileload__modal_input::before {
-  content: attr(data-title);
-  display: inline-block;
-  position: absolute;
-  padding-top: 50%;
-  width: 100%;
-  height: 100%;
-  visibility: visible;
-  overflow: hidden;
-  font-size: 10px;
-  text-align: center;
-}
-
-.fileload__modal_input {
-  position: absolute;
-  left: 0;
-  visibility: hidden;
-  width: 100%;
-  height: 100%;
-  margin: 0 auto;
-  display: block;
-  text-align: center;
-  cursor: pointer;
-}
-@-moz-document url-prefix() {
-  .fileload__modal_input {
-   visibility: visible;
-  }
+  color: #fff;
 }
 
 .fileload__modal_buttons {
@@ -249,18 +245,21 @@ body {
   margin-top: 20px;
   margin-right: 10px;
 }
+
 .users__block_image {
-  display: none;
-  width: 0;
-  height: 0;
-}
-.users__block_image-add  {
   display: block;
   width: 70px;
   height: 70px;
   border-radius: 70px;
   box-shadow: none;
 }
+.users__block_list-member-image {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  box-shadow: none;
+}
+
 .no_photo-o {
   display: none;
 }
