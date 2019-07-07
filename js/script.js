@@ -11,11 +11,7 @@ let name = document.querySelector('#name'),
     dropArea = document.getElementById('drop-area'),
     cancel = document.querySelector('#cancel'),
     sendPhoto = document.querySelector('#sendPhoto'),
-    container = document.querySelector('.container'),
-    nameOfuser = document.querySelector('.users__block_name'),
-    members = document.querySelector('.users__block_members'),
     usersList = document.querySelector('#usersList'),
-    messagesPhoto = document.querySelector('#messagesPhoto'),
     templateOfMessage = document.querySelector('#messageList').textContent,
     templateOfUsers = document.querySelector('#listOfUsers').textContent,
     renderUsers = Handlebars.compile(templateOfUsers),
@@ -23,7 +19,6 @@ let name = document.querySelector('#name'),
     connected = false,
     socket = io.connect('http://localhost:3000/');
 
-// -----------------------------------------------------------------
 ;['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
   dropArea.addEventListener(eventName, preventDefaults)
 })
@@ -49,21 +44,16 @@ function unhighlight(evt) {
 }
 
 dropArea.addEventListener('drop', handleDrop)
-let globalFile;
+
 function handleDrop(evt) {
-  evt.preventDefault();
-  evt.stopPropagation();
   let dt = evt.dataTransfer
   let file = dt.files[0]
-  globalFile = file;
   handleFile(file)
 }
 
 function handleFile(file) {
   previewFile(file)
-  sendPhoto.addEventListener('click', () => {
-    uploadFile(file);
-  })
+  sendPhoto.addEventListener('click', uploadFile.bind(null, file))
 }
 
 function uploadFile(file) {
@@ -89,7 +79,6 @@ function previewFile(file) {
   }
 }
 
-// -----------------------------------------------------------------
 function onAuthFormSubmit(evt) {
   evt.preventDefault();
 
@@ -111,6 +100,8 @@ function onSendMessageFormSubmit(evt) {
 
 function onLoadPhotoClick(evt) {
   evt.preventDefault();
+  
+  if (!connected) return
 
   fileLoadPopup.style.display = 'block';
 }
@@ -162,6 +153,8 @@ socket.on('user joined', (data) => {
   messages.appendChild(div)
 })
 
+socket.on('new message', addMessage);
+
 socket.on('refresh image', (users) => {
   showUsers(users);
 })
@@ -176,13 +169,3 @@ socket.on('user left', (data) => {
 
   messages.appendChild(div)
 })
-
-socket.on('new message', addMessage);
-
-function getDate() {
-  const date    = new Date();
-  const hours   = (date.getHours() < 10) ? '0' + date.getHours() : date.getHours();
-  const minutes = (date.getMinutes() < 10) ? '0' + date.getMinutes() : date.getMinutes();
-
-  return `${hours}:${minutes}`;
-}
