@@ -11,11 +11,11 @@ let users = []
 
 app.use(express.static(__dirname));
 
-app.get('/', function (req, res) {
+app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
 
-io.on('connection', function (socket) {
+io.on('connection', (socket) => {
   let addedUser = false;
 
   socket.on('add user', (userInfo) => {

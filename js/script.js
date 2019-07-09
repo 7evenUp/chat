@@ -61,7 +61,7 @@ function uploadFile(file) {
 
   let reader = new FileReader()
   reader.readAsDataURL(file)
-  reader.onloadend = function() {
+  reader.onloadend = () => {
     document.querySelector('#avatarImage').src = reader.result;
     socket.emit('load image', reader.result)
   }
@@ -72,7 +72,7 @@ function previewFile(file) {
 
   let reader = new FileReader()
   reader.readAsDataURL(file)
-  reader.onloadend = function() {
+  reader.onloadend = () => {
     let img = document.createElement('img')
     img.src = reader.result
     document.getElementById('preview').appendChild(img)
