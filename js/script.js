@@ -17,6 +17,7 @@ let name = document.querySelector('#name'),
     renderUsers = Handlebars.compile(templateOfUsers),
     renderMessage = Handlebars.compile(templateOfMessage),
     connected = false,
+    userKey = '',
     socket = io.connect('http://localhost:3000/');
 
 ;['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
@@ -29,19 +30,12 @@ function preventDefaults (evt) {
 }
 
 ;['dragenter', 'dragover'].forEach(eventName => {
-  dropArea.addEventListener(eventName, highlight)
+  dropArea.addEventListener(eventName, () => dropArea.classList.add('highlight'))
 })
 
 ;['dragleave', 'drop'].forEach(eventName => {
-  dropArea.addEventListener(eventName, unhighlight)
+  dropArea.addEventListener(eventName, () => dropArea.classList.remove('highlight'))
 })
-
-function highlight(evt) {
-  dropArea.classList.add('highlight')
-}
-function unhighlight(evt) {
-  dropArea.classList.remove('highlight')
-}
 
 dropArea.addEventListener('drop', handleDrop)
 
@@ -51,21 +45,55 @@ function handleDrop(evt) {
   handleFile(file)
 }
 
+function validateFileExtension(file) {
+  const allowedExtensions = ['jpeg', 'jpg'];
+  const fileExtension = file.name.split('.').pop().toLowerCase();
+  let isValid = false;
+
+  allowedExtensions.forEach((extension) => {
+    if (fileExtension === extension) {
+      isValid = true;
+    }
+  })  
+
+  return isValid;
+}
+
 function handleFile(file) {
-  previewFile(file)
-  sendPhoto.addEventListener('click', uploadFile.bind(null, file))
+  if (validateFileExtension(file) && (file.size / 1024 <= 250)) {
+    previewFile(file)
+    sendPhoto.addEventListener('click', uploadFile.bind(null, file))
+  } else {
+    alert('Разрешены форматы: jpeg, jpg\nРазмер не должен превышать 250KB');
+  }
 }
 
 function uploadFile(file) {
   fileLoadPopup.style.display = 'none';
 
+  let localStorageUsers = JSON.parse(localStorage.getItem('users'));
   let reader = new FileReader()
   reader.readAsDataURL(file)
   reader.onloadend = () => {
     document.querySelector('#avatarImage').src = reader.result;
     socket.emit('load image', reader.result)
+
+    localStorageUsers[userKey].avatar = reader.result;
+    localStorage.setItem('users', JSON.stringify(localStorageUsers))
   }
 }
+
+socket.on('refresh message-images', (userInfo) => {
+  let localStorageMessages = JSON.parse(localStorage.getItem('messages'));
+  messages.innerHTML = '';
+  for (const message of localStorageMessages) {
+    if (message.userkey === userInfo.userKey) {
+      message.image = userInfo.image;
+    }
+    addMessage(message);
+  }
+  localStorage.setItem('messages', JSON.stringify(localStorageMessages))
+})
 
 function previewFile(file) {
   document.getElementById('preview').innerHTML = '';
@@ -82,10 +110,41 @@ function previewFile(file) {
 function onAuthFormSubmit(evt) {
   evt.preventDefault();
 
-  socket.emit('add user', {
+  connected = true;
+
+  const userInfo = {
     name: name.value.trim(),
     nickname: nickname.value.trim()
-  })
+  }
+
+  userKey = `${userInfo.name}${userInfo.nickname}`;
+
+  if (!localStorage.getItem('users')) {
+    localStorage.setItem('users', '{}')
+  }
+
+  if (!localStorage.getItem('messages')) {
+    localStorage.setItem('messages', '[]')
+  }
+
+  let localStorageUsers = JSON.parse(localStorage.getItem('users'));
+  let localStorageMessages = JSON.parse(localStorage.getItem('messages'));
+
+  if (!(userKey in localStorageUsers)) {
+    localStorageUsers[userKey] = { avatar: '' };
+    localStorage.setItem('users', JSON.stringify(localStorageUsers))
+  }
+
+  if (localStorageUsers[userKey].avatar) {
+    document.querySelector('#avatarImage').src = localStorageUsers[userKey].avatar;
+    userInfo.image = localStorageUsers[userKey].avatar;
+  }
+
+  for (const message of localStorageMessages) {
+    addMessage(message);
+  }
+
+  socket.emit('add user', userInfo)
 
   authPopup.style.display = 'none'
 }
@@ -113,17 +172,16 @@ function onCancelBtnClick(evt) {
 }
 
 function addMessage(messageInfo){
-  if (!connected) return;
-
-  const messageDiv = document.createElement('div')
-  messageDiv.innerHTML = renderMessage(messageInfo);
-  messageDiv.classList.add('message__item')
-  messages.appendChild(messageDiv);
-  messageContainer.scrollTop = messageContainer.scrollHeight;
+  if (connected) {
+    const messageDiv = document.createElement('div')
+    messageDiv.innerHTML = renderMessage(messageInfo);
+    messageDiv.classList.add('message__item')
+    messages.appendChild(messageDiv);
+  }
 }
 
 function showUsers(users) {
-  usersList.innerHTML = renderUsers(users);
+  if (connected) usersList.innerHTML = renderUsers(users);
 }
 
 authForm.addEventListener('submit', onAuthFormSubmit)
@@ -131,41 +189,37 @@ sendMessageForm.addEventListener('submit', onSendMessageFormSubmit)
 loadPhoto.addEventListener('click', onLoadPhotoClick)
 cancel.addEventListener('click', onCancelBtnClick)
 
+socket.on('same-user-error', (userInfo) => {
+  authPopup.style.display = 'block';
+  alert(`Пользователь с именем ${userInfo.name} и никнеймом ${userInfo.nickname} уже онлайн`);
+})
+
 socket.on('login', (data) => {
-  connected = true;
   document.querySelector('.users__block_name').textContent = data.userInfo.name;
   showUsers(data.users);
-
-  let div = document.createElement('div');
-  div.innerHTML = '<b>You are WELCOME!</b>'
-
-  messages.appendChild(div)
 })
 
 socket.on('user joined', (data) => {
-  if (!connected) return;
-
-  showUsers(data.users);
-
-  let div = document.createElement('div');
-  div.innerHTML = `<b>${data.userInfo.name}</b> has just joined the chat`
-
-  messages.appendChild(div)
+  if (connected) showUsers(data.users);
 })
 
-socket.on('new message', addMessage);
+socket.on('new message', (messageInfo) => {
+  if (connected) {
+    
+    if (messageInfo.userkey === userKey) {
+      let localStorageMessages = JSON.parse(localStorage.getItem('messages'));
+      localStorageMessages.push(messageInfo)
+      localStorage.setItem('messages', JSON.stringify(localStorageMessages))
+    }
+
+    addMessage(messageInfo);
+  }
+});
 
 socket.on('refresh image', (users) => {
   showUsers(users);
 })
 
-socket.on('user left', (data) => {
-  if (!connected) return;
-
-  showUsers(data.users);
-
-  let div = document.createElement('div');
-  div.innerHTML = `<b>${data.userInfo.name}</b> has just left the chat`
-
-  messages.appendChild(div)
+socket.on('user left', (users) => {
+  if (connected) showUsers(users);
 })
