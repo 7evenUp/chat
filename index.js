@@ -7,23 +7,31 @@ server.listen(3000, () => {
   console.log('listening on *:3000');
 });
 
-let users = [];
+let users = []
 
 app.use(express.static(__dirname));
 
-app.get('/', function (req, res) {
+app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
 
-io.on('connection', function (socket) {
+io.on('connection', (socket) => {
   let addedUser = false;
 
   socket.on('add user', (userInfo) => {
     if (addedUser) return;
 
+    for (const user of users) {
+      if (user.name === userInfo.name && user.nickname === userInfo.nickname) {
+        socket.emit('same-user-error', userInfo);
+        return;
+      }
+    }
+
     addedUser = true;
 
     socket.userInfo = userInfo;
+    socket.userInfo.userKey = `${socket.userInfo.name}${socket.userInfo.nickname}`;
     users.push(socket.userInfo);
 
     socket.emit('login', { 
@@ -40,6 +48,7 @@ io.on('connection', function (socket) {
   socket.on('load image', (image) => {
     socket.userInfo.image = image;
     io.emit('refresh image', users);
+    io.emit('refresh message-images', socket.userInfo)
   })
 
   socket.on('new message', (message) => {
@@ -47,6 +56,7 @@ io.on('connection', function (socket) {
       date: getDate(),
       content: message,
       username: socket.userInfo.name,
+      userkey: `${socket.userInfo.name}${socket.userInfo.nickname}`,
       image: socket.userInfo.image
     })
   })
@@ -56,10 +66,7 @@ io.on('connection', function (socket) {
 
       users.splice(users.indexOf(socket.userInfo), 1);
 
-      socket.broadcast.emit('user left', {
-        userInfo: socket.userInfo,
-        users: users
-      })
+      socket.broadcast.emit('user left', users)
     }
   })
 });
